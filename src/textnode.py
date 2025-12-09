@@ -25,6 +25,7 @@ class TextNode():
             and self.url == other.url
         )
 
-    def __repr__(self):
-        return f"TextNode({self.text}, {self.text_type.value}, {self.url})"
 
+    def __repr__(self):
+        class_name = type(self).__name__
+        return f"{class_name}({self.text}, {self.text_type.value}, {self.url})"
