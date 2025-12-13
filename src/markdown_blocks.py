@@ -81,7 +81,18 @@ def quote_parser(block):
     for line in lines:
         final_str = final_str + line[1:] + "\n"
     return final_str
-    
+
+def unordered_list_parser(block):
+    """
+    Given unordered list block: 
+    replaces '-' with <li>
+    replaces '\n' with </li>
+    and returns the text string.
+    """
+    final_str = block.replace("- ", "<li>")
+    final_str = final_str.replace("\n", "</li>")
+    return final_str
+
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
     block_nodes = []
@@ -109,7 +120,6 @@ def markdown_to_html_node(markdown):
             html_node = text_node_to_html_node(text_node)
             block_nodes.append(html_node.to_html())
         if block_type == BlockType.QUOTE:
-            print("found a quote!")
             text = quote_parser(block)
             list_of_textnodes = text_to_textnodes(text)
             for x in list_of_textnodes:
@@ -117,6 +127,17 @@ def markdown_to_html_node(markdown):
                 leaves.append(new_leaf)
             parent_node = ParentNode("blockquote", leaves)
             block_nodes.append(parent_node.to_html())
+        if block_type == BlockType.UNORDERED_LIST:
+            text = unordered_list_parser(block)
+            list_of_textnodes = text_to_textnodes(text)
+            print(f"content of textnodes list is: {list_of_textnodes}")
+            print(f"length is: {len(list_of_textnodes)}")
+            for x in list_of_textnodes:
+                new_leaf = text_node_to_html_node(x)
+                leaves.append(new_leaf)
+            parent_node = ParentNode("ul", leaves)
+            block_nodes.append(parent_node.to_html())
+
     for block_node in block_nodes:
         print(block_node)
         print()
@@ -138,6 +159,10 @@ The second block, also a simple paragraph. I'm including a code block. It is `x 
 >This represents a line that is a quote.
 >All lines must start with
 >The gt symbol.
+
+- unordered list
+- with some points
+- for people to ponder
 
 ```
 print('hello')
