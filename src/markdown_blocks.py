@@ -1,5 +1,8 @@
 import re
 from enum import Enum
+from inline_markdown import text_to_textnodes
+from htmlnode import LeafNode, ParentNode
+from textnode import text_node_to_html_node
 
 class BlockType(Enum):
     PARAGRAPH = "paragraph"
@@ -13,7 +16,6 @@ class BlockType(Enum):
 def markdown_to_blocks(text):
     final_list = []
     candidates_list = text.split("\n\n")
-    print(candidates_list)
     for candidate in candidates_list:
         if candidate == "":
             continue
@@ -51,24 +53,30 @@ def block_to_block_type(text):
         return BlockType.ORDERED_LIST
     return BlockType.PARAGRAPH
 
-    
-text = "###### This is a headline"
-heading = block_to_block_type(text)
-print(heading)
 
-text2 = "```print(some_variable)```"
-code = block_to_block_type(text2)
-print(code)
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    block_nodes = []
+    for block in blocks:
+        leaves = []
+        block_type = block_to_block_type(block)
+        if block_type == BlockType.PARAGRAPH:
+            list_of_textnodes = text_to_textnodes(block)
+            for x in list_of_textnodes:
+                new_leaf = text_node_to_html_node(x)
+                leaves.append(new_leaf)
+            parent_node = ParentNode("p", leaves)
+            block_nodes.append(parent_node.to_html())
+    print(block_nodes)
+    for block_node in block_nodes:
+        print(block_node)
+        print()
+md = """ 
+For my first try, I am creating a simple paragraph that contains
+some simple **bolded sections** and also something that is italic,
+like the scientific name of _Escherichia coli_. Hopefully this simple
+paragraph will get things started.
 
-text3 = "- First unordered_list"
-ordered = block_to_block_type(text3)
-print(ordered)
-
-text4 = """
-1. first point
-2. second point
-3. a very good point
-4. final point
+The second block, also a simple paragraph. I'm including a code block. It is `x = mylist`. I need to figure out how to not parse text that is in a code block. This will allow simple things like variable names with underscores.
 """
-ordered2 = block_to_block_type(text4)
-print(ordered2)
+markdown_to_html_node(md)
