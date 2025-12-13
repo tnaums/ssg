@@ -26,10 +26,10 @@ def markdown_to_blocks(text):
 def block_to_block_type(text):
     heading = re.compile(r'#{1,6} .*')
     code = re.compile(r'^```.*```$', flags=re.DOTALL)
-    if heading.search(text):
-        return BlockType.HEADING
     if code.search(text):
         return BlockType.CODE
+    if heading.search(text):
+        return BlockType.HEADING
     is_quote = True
     is_unordered = True
     is_ordered = True
@@ -71,6 +71,16 @@ def code_parser(block):
     extract_text = re.compile(r'^```(.*)```$', flags=re.DOTALL)
     match_list = extract_text.findall(block)
     return match_list[0]
+
+def quote_parser(block):
+    """
+    Given a quote block, remove the '>' symboles and return text
+    """
+    final_str = ""
+    lines = block.split('\n')
+    for line in lines:
+        final_str = final_str + line[1:] + "\n"
+    return final_str
     
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
@@ -98,7 +108,15 @@ def markdown_to_html_node(markdown):
             text_node = TextNode(text, TextType.CODE)
             html_node = text_node_to_html_node(text_node)
             block_nodes.append(html_node.to_html())
-
+        if block_type == BlockType.QUOTE:
+            print("found a quote!")
+            text = quote_parser(block)
+            list_of_textnodes = text_to_textnodes(text)
+            for x in list_of_textnodes:
+                new_leaf = text_node_to_html_node(x)
+                leaves.append(new_leaf)
+            parent_node = ParentNode("blockquote", leaves)
+            block_nodes.append(parent_node.to_html())
     for block_node in block_nodes:
         print(block_node)
         print()
@@ -117,9 +135,14 @@ The second block, also a simple paragraph. I'm including a code block. It is `x 
 
 ###### Lowest level heading **here**
 
+>This represents a line that is a quote.
+>All lines must start with
+>The gt symbol.
+
 ```
 print('hello')
-print()
+print(my_variable)
+# comment
 print('world')
 ```
 """
