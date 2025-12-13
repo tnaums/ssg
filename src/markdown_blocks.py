@@ -53,6 +53,9 @@ def block_to_block_type(text):
         return BlockType.ORDERED_LIST
     return BlockType.PARAGRAPH
 
+def paragraph_parser(block):
+    return block.replace("\n", " ")
+
 def heading_parser(block):
     """
     Given a heading block, return both the 'h' number and the heading text
@@ -93,6 +96,19 @@ def unordered_list_parser(block):
     final_str = final_str.replace("\n", "</li>")
     return final_str
 
+def ordered_list_parser(block):
+    """
+    Given ordered list block:
+    adds <li> and </li> to ends of each element.
+    """
+    x = re.compile(r'\d+\.\ (.*)')
+    final_str = ""
+    matches = x.findall(block)
+    for match in matches:
+        to_add = f"<li>{match}</li>"
+        final_str = final_str + to_add
+    return final_str
+    
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
     block_nodes = []
@@ -100,12 +116,13 @@ def markdown_to_html_node(markdown):
         leaves = []
         block_type = block_to_block_type(block)
         if block_type == BlockType.PARAGRAPH:
-            list_of_textnodes = text_to_textnodes(block)
+            text = paragraph_parser(block)
+            list_of_textnodes = text_to_textnodes(text)
             for x in list_of_textnodes:
                 new_leaf = text_node_to_html_node(x)
                 leaves.append(new_leaf)
             parent_node = ParentNode("p", leaves)
-            block_nodes.append(parent_node.to_html())
+            block_nodes.append(parent_node)
         if block_type == BlockType.HEADING:
             h_level, text = heading_parser(block)
             list_of_textnodes = text_to_textnodes(text)
@@ -113,12 +130,12 @@ def markdown_to_html_node(markdown):
                 new_leaf = text_node_to_html_node(x)
                 leaves.append(new_leaf)
             parent_node = ParentNode(h_level, leaves)
-            block_nodes.append(parent_node.to_html())
+            block_nodes.append(parent_node)
         if block_type == BlockType.CODE:
             text = code_parser(block)
             text_node = TextNode(text, TextType.CODE)
             html_node = text_node_to_html_node(text_node)
-            block_nodes.append(html_node.to_html())
+            block_nodes.append(html_node)
         if block_type == BlockType.QUOTE:
             text = quote_parser(block)
             list_of_textnodes = text_to_textnodes(text)
@@ -126,49 +143,57 @@ def markdown_to_html_node(markdown):
                 new_leaf = text_node_to_html_node(x)
                 leaves.append(new_leaf)
             parent_node = ParentNode("blockquote", leaves)
-            block_nodes.append(parent_node.to_html())
+            block_nodes.append(parent_node)
         if block_type == BlockType.UNORDERED_LIST:
             text = unordered_list_parser(block)
             list_of_textnodes = text_to_textnodes(text)
-            print(f"content of textnodes list is: {list_of_textnodes}")
-            print(f"length is: {len(list_of_textnodes)}")
             for x in list_of_textnodes:
                 new_leaf = text_node_to_html_node(x)
                 leaves.append(new_leaf)
             parent_node = ParentNode("ul", leaves)
-            block_nodes.append(parent_node.to_html())
+            block_nodes.append(parent_node)
+        if block_type == BlockType.ORDERED_LIST:
+            text = ordered_list_parser(block)
+            list_of_textnodes = text_to_textnodes(text)
+            for x in list_of_textnodes:
+                new_leaf = text_node_to_html_node(x)
+                leaves.append(new_leaf)
+            parent_node = ParentNode("ol", leaves)
+            block_nodes.append(parent_node)
+    return ParentNode("div", block_nodes)
 
-    for block_node in block_nodes:
-        print(block_node)
-        print()
+# md = """ 
+# # Major **heading** here!
 
-md = """ 
-# Major **heading** here!
+# For my first try, I am creating a simple paragraph that contains
+# some simple **bolded sections** and also something that is italic,
+# like the scientific name of _Escherichia coli_. Hopefully this simple
+# paragraph will get things started.
 
-For my first try, I am creating a simple paragraph that contains
-some simple **bolded sections** and also something that is italic,
-like the scientific name of _Escherichia coli_. Hopefully this simple
-paragraph will get things started.
+# ## Secondary _italic heading_ here
 
-## Secondary _italic heading_ here
+# The second block, also a simple paragraph. I'm including a code block. It is `x = mylist`. I need to figure out how to not parse text that is in a code block. This will allow simple things like variable names with underscores.
 
-The second block, also a simple paragraph. I'm including a code block. It is `x = mylist`. I need to figure out how to not parse text that is in a code block. This will allow simple things like variable names with underscores.
+# ###### Lowest level heading **here**
 
-###### Lowest level heading **here**
+# >This represents a line that is a quote.
+# >All lines must start with
+# >The gt symbol.
 
->This represents a line that is a quote.
->All lines must start with
->The gt symbol.
+# - unordered list
+# - with some points
+# - for people to ponder
 
-- unordered list
-- with some points
-- for people to ponder
+# 1. begining ordered list
+# 2. with a couple of
+# 3. important points.
 
-```
-print('hello')
-print(my_variable)
-# comment
-print('world')
-```
-"""
-markdown_to_html_node(md)
+# ```
+# print('hello')
+# print(my_variable)
+# # comment
+# print('world')
+# ```
+# """
+# document = markdown_to_html_node(md)
+# print(document.to_html())

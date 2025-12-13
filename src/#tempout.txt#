@@ -1,0 +1,2 @@
+AssertionError: '<div[30 chars]graph\ntext in a p\ntag here</p><p>Thisis ano[71 chars]div>' !=
+                '<div[30 chars]graph text in a p tag here</p><p>This is anoth[69 chars]div>'
