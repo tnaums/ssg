@@ -2,7 +2,7 @@ import re
 from enum import Enum
 from inline_markdown import text_to_textnodes
 from htmlnode import LeafNode, ParentNode
-from textnode import text_node_to_html_node
+from textnode import text_node_to_html_node, TextNode, TextType
 
 class BlockType(Enum):
     PARAGRAPH = "paragraph"
@@ -25,7 +25,7 @@ def markdown_to_blocks(text):
 
 def block_to_block_type(text):
     heading = re.compile(r'#{1,6} .*')
-    code = re.compile(r'^```.*```$')
+    code = re.compile(r'^```.*```$', flags=re.DOTALL)
     if heading.search(text):
         return BlockType.HEADING
     if code.search(text):
@@ -53,7 +53,25 @@ def block_to_block_type(text):
         return BlockType.ORDERED_LIST
     return BlockType.PARAGRAPH
 
+def heading_parser(block):
+    """
+    Given a heading block, return both the 'h' number and the heading text
+    with the '#' removed
+    """
+    determine_h_number = re.compile(r'^(#{1,6}) (.*)')
+    for match in determine_h_number.findall(block):
+        left, right = match
+        h_level = "h" + str(len(left))
+        return h_level, right
 
+def code_parser(block):
+    """
+    Given a code block, removes the delimiters and returns the text
+    """
+    extract_text = re.compile(r'^```(.*)```$', flags=re.DOTALL)
+    match_list = extract_text.findall(block)
+    return match_list[0]
+    
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
     block_nodes = []
@@ -67,16 +85,42 @@ def markdown_to_html_node(markdown):
                 leaves.append(new_leaf)
             parent_node = ParentNode("p", leaves)
             block_nodes.append(parent_node.to_html())
-    print(block_nodes)
+        if block_type == BlockType.HEADING:
+            h_level, text = heading_parser(block)
+            list_of_textnodes = text_to_textnodes(text)
+            for x in list_of_textnodes:
+                new_leaf = text_node_to_html_node(x)
+                leaves.append(new_leaf)
+            parent_node = ParentNode(h_level, leaves)
+            block_nodes.append(parent_node.to_html())
+        if block_type == BlockType.CODE:
+            text = code_parser(block)
+            text_node = TextNode(text, TextType.CODE)
+            html_node = text_node_to_html_node(text_node)
+            block_nodes.append(html_node.to_html())
+
     for block_node in block_nodes:
         print(block_node)
         print()
+
 md = """ 
+# Major **heading** here!
+
 For my first try, I am creating a simple paragraph that contains
 some simple **bolded sections** and also something that is italic,
 like the scientific name of _Escherichia coli_. Hopefully this simple
 paragraph will get things started.
 
+## Secondary _italic heading_ here
+
 The second block, also a simple paragraph. I'm including a code block. It is `x = mylist`. I need to figure out how to not parse text that is in a code block. This will allow simple things like variable names with underscores.
+
+###### Lowest level heading **here**
+
+```
+print('hello')
+print()
+print('world')
+```
 """
 markdown_to_html_node(md)
