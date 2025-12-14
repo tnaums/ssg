@@ -1,17 +1,30 @@
-from textnode import TextNode
-from textnode import TextType
-from split_delimiter import split_nodes_delimiter
+import os
+import shutil
 
+def empty_public():
+    target = 'public'
+    try:
+        shutil.rmtree(target)
+    except FileNotFoundError:
+        pass
+    os.mkdir(target)
+
+def copy_to_public(source_dir, target_dir):
+    contents = os.listdir(source_dir)
+    for content in contents:
+        path = os.path.join(source_dir, content)
+        if os.path.isfile(path):
+            shutil.copy(path, target_dir)
+        elif os.path.isdir(path):
+            new_dir = os.path.join("public", content)
+            os.mkdir(new_dir)
+            copy_to_public(path, new_dir)
+    
+    
 def main():
-    # tnode1 = TextNode("Some illin text", TextType.BOLD, "https://www.boot.dev")
-    # print(tnode1)
-    # tnode2 = TextNode("Other text here", TextType.BOLD, "https://www.boot.dev")
-    # print(tnode1 == tnode2)
-    tnode3 = TextNode("This is some **very heavy** and important text.", TextType.TEXT)
-    split_nodes_delimiter([tnode3], "**", TextType.BOLD)
-    tnode4 = TextNode("This is **also** some **very heavy** and important text.", TextType.TEXT)
-#    split_nodes_delimiter([tnode4], "**", TextType.BOLD)
-    tnode5 = TextNode("**This** is some very heavy and important text.", TextType.TEXT)
-    print(split_nodes_delimiter([tnode5], "**", TextType.BOLD))
+    empty_public()
+    copy_to_public('static', 'public')
 
-main()
+if __name__ == "__main__":
+    main()
+    
