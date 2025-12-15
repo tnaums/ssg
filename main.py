@@ -2,7 +2,7 @@ import os
 import shutil
 
 def copy_to_public():
-    target = 'public'
+    target = 'docs'
     shutil.rmtree(target)
     os.mkdir(target_dir)
 

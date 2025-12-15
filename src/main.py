@@ -4,7 +4,7 @@ import shutil
 from markdown_blocks import markdown_to_blocks, markdown_to_html_node
 
 def empty_public():
-    target = 'public'
+    target = 'docs'
     try:
         shutil.rmtree(target)
     except FileNotFoundError:
@@ -18,7 +18,7 @@ def copy_to_public(source_dir, target_dir):
         if os.path.isfile(path):
             shutil.copy(path, target_dir)
         elif os.path.isdir(path):
-            new_dir = os.path.join("public", content)
+            new_dir = os.path.join("docs", content)
             os.mkdir(new_dir)
             copy_to_public(path, new_dir)
 
@@ -55,7 +55,6 @@ def generate_page(from_path, template_path, dest_path, basepath):
 
 def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
      contents = os.listdir(dir_path_content)
-     print(contents)
      for content in contents:
         path = os.path.join(dir_path_content, content)
         target = os.path.join(dest_dir_path, content)
@@ -64,7 +63,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
             generate_page(path, template_path, target, basepath)
         elif os.path.isdir(path):
             os.mkdir(target)
-            generate_pages_recursive(path, 'template.html', target, basepath)            
+            generate_pages_recursive(path, template_path, target, basepath)            
 
     
 def main():
@@ -73,8 +72,8 @@ def main():
     except IndexError:
         basepath = "/"
     empty_public()
-    copy_to_public('static', 'public')
-    generate_pages_recursive('content', 'template.html', 'public', basepath)
+    copy_to_public('static', 'docs')
+    generate_pages_recursive('content', 'template.html', 'docs', basepath)
 
 if __name__ == "__main__":
     main()
