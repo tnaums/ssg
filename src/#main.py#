@@ -55,7 +55,6 @@ def generate_page(from_path, template_path, dest_path, basepath):
 
 def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
      contents = os.listdir(dir_path_content)
-     print(contents)
      for content in contents:
         path = os.path.join(dir_path_content, content)
         target = os.path.join(dest_dir_path, content)
