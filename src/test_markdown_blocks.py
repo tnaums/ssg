@@ -1,6 +1,6 @@
 import unittest
 
-from markdown_blocks import block_to_block_type, BlockType, markdown_to_html_node
+from markdown_blocks import block_to_block_type, BlockType, markdown_to_html_node, extract_title
 
 class TestBlockToBlockType(unittest.TestCase):
     def test_heading(self):
@@ -59,6 +59,32 @@ the **same** even with inline stuff
                 html,
                 "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
             )
-    
+
+class TestExtractTitle(unittest.TestCase):
+    def h1_present(self):
+        md = """
+# This is the title
+
+And there is also some other stuff that is
+written in the file.
+"""
+        title = extract_title(md)
+        self.assertEqual(
+            title,
+            "This is the title"
+            )
+    def h1_absent(self):
+        md = """
+Without a title
+
+And there is also some other stuff that is
+written in the file.
+"""
+        title = extract_title(md)
+        self.assertEqual(
+            title,
+            "No h1 header found in markdown file.")
+
+            
 if __name__ == "__main__":
     unittest.main()

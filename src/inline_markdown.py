@@ -52,7 +52,6 @@ def split_nodes_image(old_nodes):
         if len(sections) == 1:
             new_nodes.append(old_node)
             continue
-        print(f"sections => {sections}")
         if len(sections) % 2 == 0:
             raise ValueError("invalid image markdown, formatted section not closed")
         for section in sections:
@@ -60,8 +59,6 @@ def split_nodes_image(old_nodes):
                 list_o_tuples = extract_markdown_images(section)
                 for tpl in list_o_tuples:
                     atext, url = tpl
-                    print(type(atext), type(url))
-                    print(f"atext: {atext}, url: {url}")
                     new_nodes.append(TextNode(atext, TextType.IMAGE, url))
             elif len(section) == 0:
                 continue
@@ -82,7 +79,6 @@ def split_nodes_link(old_nodes):
         for section in sections:
             if section.startswith('['):
                 list_o_tuples = extract_markdown_links(section)
-#                print(list_o_tuples)
                 for tpl in list_o_tuples:
                     atext, url = tpl
                     new_nodes.append(TextNode(atext, TextType.LINK, url))

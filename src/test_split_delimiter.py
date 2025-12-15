@@ -26,9 +26,9 @@ class TestSplitDelimiter(unittest.TestCase):
         self.assertEqual(snode[1], TextNode("for i in range(10):", TextType.CODE, None))
     def test_extract_markdown_images(self):
         matches = extract_markdown_images(
-            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+            "![JRR Tolkien sitting](/images/tolkien.png)"
             )
-        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+        self.assertListEqual([("JRR Tolkien sitting", "/images/tolkien.png")], matches)
     def test_extract_markdown_images_two(self):
         matches = extract_markdown_links(
             text = "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)"

@@ -77,12 +77,14 @@ def code_parser(block):
 
 def quote_parser(block):
     """
-    Given a quote block, remove the '>' symboles and return text
+    Given a quote block, remove the '>' symbles and return text
     """
     final_str = ""
     lines = block.split('\n')
+    print(f"block quote parser: lines are {lines}")
     for line in lines:
-        final_str = final_str + line[1:] + "\n"
+        final_str = final_str + line[2:]# + "\n"
+    print(f"final string: {final_str}")
     return final_str
 
 def unordered_list_parser(block):
@@ -162,6 +164,33 @@ def markdown_to_html_node(markdown):
             block_nodes.append(parent_node)
     return ParentNode("div", block_nodes)
 
+
+def extract_title(markdown):
+    h1_header = ""
+    for line in markdown:
+        if line.startswith("# "):
+            h1_header = line[2:]
+            h1_header = h1_header.strip()
+    if h1_header == "":
+        raise Exception("No h1 header found in markdown file.")
+    else:
+        return h1_header
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    with open(from_path, 'r') as f:
+        markdown = f.read()
+    with open(template_path, 'r') as t:
+        template = t.read()
+    html_string = markdown_to_html_node(markdown).to_html()
+    the_title = extract_title(markdown)
+    update_string = template.replace("{{ Title }}", the_title)
+    final_string = update_string.replace("{{ Content }}", html_string)
+    with open(dest_path, 'w') as out:
+        out.write(final_string)
+        
+
+    
 # md = """ 
 # # Major **heading** here!
 
